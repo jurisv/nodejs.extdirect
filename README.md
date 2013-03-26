@@ -1,4 +1,4 @@
-*** Sencha Ext.Direct connector for node.js ***
+# Sencha Ext.Direct connector for node.js 
 
 Compatibility:
 * Sencha Touch 2.1.x / 2.2
@@ -6,17 +6,17 @@ Compatibility:
 
 Usage (Sencha Touch):
 *** Create file/folder structure like this ***
-
+````
 /app.js
 /config.json
 /package.json
 /public/ -> here you generate ST application using Sencha CMD
 /direct/ -> here you will place all Ext.Direct files
 /uploads/ -> file upload folder (must be writable by node.js)
-
-# This example is using MySQL database
-# File app.js:
-
+````
+### This example is using MySQL database
+### File app.js:
+````
 //-------------------------------
 var express = require('express'),
     nconf = require('nconf'),
@@ -106,9 +106,8 @@ http.createServer(app).listen(app.get('port'), function(){
     console.log("Express server listening on port " + app.get('port'));
 });
 
-//---------------------------
 
-
+````
 #package.json:
 
 {
