@@ -120,7 +120,7 @@ http.createServer(app).listen(app.get('port'), function(){
         "express": "3.1.0",
         "nconf": "~0.6.7",
         "mysql": "~2.0.0",
-        "extdirect":"~0.9.6"
+        "extdirect":"~0.9.7"
     }
 }
 ````
@@ -152,6 +152,12 @@ Ext.onReady(function(){
 });
 ````
 
+/public/index.html(add the line for requesting API): 
+````
+<!-- The line below must be kept intact for Sencha Command to build your application -->
+    <script id="microloader" type="text/javascript" src="touch/microloader/development.js"></script>
+    <script type="text/javascript" src="/directapi"></script>
+````
 # *** Sample direct methods ***
 Create file /direct/DXTodoItem.js :
 ````
@@ -256,7 +262,7 @@ Ext.define('TouchDirect.model.TodoItem', {
 
 ##  *** ExtJS 4.2.x ***
 
-Server-side structure remains the same
+Server-side structure remains the same as for Sencha Touch.
 
 For your ExtJs app add in /public/app.js :
 ````
@@ -267,6 +273,28 @@ Ext.require([
 Ext.onReady(function(){
     Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
+````
+
+Index file /public/index.html
+````
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DesktopDirect</title>
+    <!-- <x-compile> -->
+        <!-- <x-bootstrap> -->
+            <link rel="stylesheet" href="bootstrap.css">
+            <script src="ext/ext-dev.js"></script>
+            <script src="bootstrap.js"></script>
+        <!-- </x-bootstrap> -->
+        <script src="app/app.js"></script>
+        <!-- Ext.Direct -->
+        <script src="/directapi"></script>
+    <!-- </x-compile> -->
+</head>
+<body></body>
+</html>
 ````
 
 Then for your directCfg, and api definitions use string literals of methods,
@@ -349,6 +377,7 @@ File:DXFormTest
 var DXFormTest = {
     testMe: function(params, callback){
         callback({
+            success:true,
             msg:'Hello world',
             params: params
         });
@@ -422,6 +451,18 @@ remember to mark your method with formHandler, as shown below
 };
 
 module.exports = DXFormTest;
+````
+
+NOTE: Remember, that you can always invoke serverside methods if you need them, and receive the response inside the callback.
+This way you are not limited to existing prebuilt use cases in different widgets.
+Sample call would be simple as this:
+````
+ExtRemote.DXFormTest.testMe(3,
+    function(res){
+        console.dir(res);
+    }
+);
+
 ````
 
 For more use cases please refer to ExtJs documentation.
