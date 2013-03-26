@@ -17,7 +17,6 @@ Usage (Sencha Touch):
 ### This example is using MySQL database
 ### File app.js:
 ````
-//-------------------------------
 var express = require('express'),
     nconf = require('nconf'),
     http = require('http'),
@@ -109,7 +108,7 @@ http.createServer(app).listen(app.get('port'), function(){
 
 ````
 #package.json:
-
+````
 {
     "name": "touch-direct",
     "version": "0.1.0",
@@ -124,9 +123,9 @@ http.createServer(app).listen(app.get('port'), function(){
         "extdirect":"~0.9.6"
     }
 }
-
-# config.json:
-
+````
+# config.json(if you don't use Mysql you can omit those lines. Be sure to take away all related code then in app.js):
+````
 {
     "MySQL_HOSTNAME": "localhost",
     "MySQL_PORT": 3306,
@@ -139,11 +138,11 @@ http.createServer(app).listen(app.get('port'), function(){
     "EXTDIRECT_PATH" : "/direct",
     "EXTDIRECT_PREFIX" : "DX"
 }
-
-#### ************************** Touch application modifications *************************** ####
+````
+# *** Touch application modifications ***
 
 For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file:
-
+````
 Ext.require([
     'Ext.direct.*'
 ]);
@@ -151,11 +150,11 @@ Ext.require([
 Ext.onReady(function(){
     Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
+````
 
-
-#### ****** Sample direct methods ******* ####
+# *** Sample direct methods ***
 Create file /direct/DXTodoItem.js :
-
+````
 var table = 'todoitem';
 var mysql = MySQLConnection;
 
@@ -220,12 +219,10 @@ var DXTodoItem  = {
 };
 
 module.exports = DXTodoItem;
+````
 
-//------------------------------------------------------
-
-
-#### ******** Configure your application model with direct proxy  ******* ####
-
+# *** Configure your application model with direct proxy  ***
+````
 Ext.define('TouchDirect.model.TodoItem', {
     extend: 'Ext.data.Model',
     config: {
@@ -255,15 +252,14 @@ Ext.define('TouchDirect.model.TodoItem', {
         }
     }
 });
+````
 
-//---------------------
-
-######################### ExtJS 4.2.x ############################
+##  *** ExtJS 4.2.x ***
 
 Server-side structure remains the same
 
-For your ExtJs app add in /public/app.js
-
+For your ExtJs app add in /public/app.js :
+````
 Ext.require([
     'Ext.direct.*'
 ]);
@@ -271,18 +267,21 @@ Ext.require([
 Ext.onReady(function(){
     Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
+````
 
 Then for your directCfg, and api definitions use string literals of methods,
 like this:
 
-//form:
+Form:
+````
 api:{
       load: 'ExtRemote.DXFormTest.load',
       submit:'ExtRemote.DXFormTest.submit'
-},
+}
+````
+Grid store with directFn:
 
-//grid store with directFn:
-
+````
 store: {
             model: 'Company',
             remoteSort: true,
@@ -296,9 +295,10 @@ store: {
                 directFn: 'TestAction.getGrid'
             }
         },
-
-File upload case:
-        ** ExtJs config **
+````
+Even more interesting is the file upload case:
+## ExtJs config
+````        
         {
                         xtype:'form',
                         title: 'File upload',
@@ -341,13 +341,11 @@ File upload case:
                             }
                         ]
                     }
-
-        ** node.js sample for upload/submit/test/load **
+````
+## node.js sample for upload/submit/test/load 
 
 File:DXFormTest
-
-//------------------
-
+````
 var DXFormTest = {
     testMe: function(params, callback){
         callback({
@@ -374,10 +372,10 @@ var DXFormTest = {
         });
 
     },
-
-//When dealing with forms that submit via submit api method or upload a file,
-//remember to mart your method with formHandler, as shown below
-
+````
+When dealing with forms that submit via submit api method or upload a file,
+remember to mark your method with formHandler, as shown below
+````
     filesubmit: function(params, files, callback/*formHandler*/){
        // console.log(params, files)
 
@@ -424,10 +422,13 @@ var DXFormTest = {
 };
 
 module.exports = DXFormTest;
+````
 
-For more use case please refer to ExtJs documentation.
+For more use cases please refer to ExtJs documentation.
 
 Changelog:
+* 0.9.7 (26 mar 2013):
+        Fixed Markdown in Docs
 * 0.9.6 (25 Mar 2013):
         Add form handling
         Add form file upload feature
