@@ -282,6 +282,8 @@ Index file /public/index.html
 <head>
     <meta charset="UTF-8">
     <title>DesktopDirect</title>
+    <!-- Ext.Direct -->
+    <script src="/directapi"></script>
     <!-- <x-compile> -->
         <!-- <x-bootstrap> -->
             <link rel="stylesheet" href="bootstrap.css">
@@ -289,8 +291,6 @@ Index file /public/index.html
             <script src="bootstrap.js"></script>
         <!-- </x-bootstrap> -->
         <script src="app/app.js"></script>
-        <!-- Ext.Direct -->
-        <script src="/directapi"></script>
     <!-- </x-compile> -->
 </head>
 <body></body>
@@ -453,7 +453,7 @@ remember to mark your method with formHandler, as shown below
 module.exports = DXFormTest;
 ````
 
-NOTE: Remember, that you can always invoke serverside methods if you need them, and receive the response inside the callback.
+NOTE: Remember, that you can always invoke server-side methods if you need them, and receive the response inside the callback.
 This way you are not limited to existing prebuilt use cases in different widgets.
 Sample call would be simple as this:
 ````
@@ -465,9 +465,74 @@ ExtRemote.DXFormTest.testMe(3,
 
 ````
 
+## Basic serverside methodsa and their callbacks
+````
+   //regular functions MUST call callback.
+    regularFunction: function(params, callback){
+        callback({msg: params});
+    },
+
+    //sample that shows usage of event instead of RPC response
+    messageFunction: function(params, callback){
+        callback({}, 'message'); // add second parameter to callback, this way it wil be converted to event
+    },
+
+    customErrorFunction: function(params, callback){
+        throw new Error("Something wrong happened"); // error handling is now fully supported
+
+        //notice that in the case of error no callback will be invoked
+
+        //if there will be other methods in batch, processing will continue for next transaction
+    }
+````
+
+## Session support
+
+Add session support inside nodes main app.js file:
+````
+//memory store for sessions - change to different storage here if you want so.
+var store  = new express.session.MemoryStore;
+
+app.configure(function(){
+    app.set('port', process.env.PORT || 3000);
+    app.use(express.logger('dev'));
+    app.use(express.bodyParser({uploadDir:'./uploads'})); //take care of body parsing/multipart/files
+    app.use(express.methodOverride());
+
+    //Required for session
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: 'something', store: store }));
+````
+
+In this case all methods will be feed with extra last argument which is sessionID.
+You have to implement authentication and session handling process according to your business requirements.
+````
+var DXLogin  = {
+// callback as last argument and mandatory
+// If session support is enabled globally, then there will be the 3rd argument accessible via arguments[arguments.length-1]
+
+    authenticate: function(params, callback){
+//      var username = params.username;
+//      var password = params.password;
+        console.log(arguments[arguments.length-1]); //this holds sessionID !
+
+        /*
+        Some code here to check login
+        */
+        callback({success:true, message:'Login successful'});
+    }
+};
+
+module.exports = DXLogin;
+````
+
 For more use cases please refer to ExtJs documentation.
 
 Changelog:
+* 0.9.8 (18 jun 2013):
+        Added Session support plus examples
+        Added Proper error handling- failed transactions will be returned as exceptions
+        Added Event support
 * 0.9.7 (26 mar 2013):
         Fixed Markdown in Docs
 * 0.9.6 (25 Mar 2013):
@@ -479,3 +544,6 @@ Changelog:
 
 * 0.9.5 Minimal stable
 * 0.9.0 Public release
+
+Known issues:
+* Currently there is no support for Windows.
