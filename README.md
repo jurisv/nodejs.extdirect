@@ -116,11 +116,15 @@ http.createServer(app).listen(app.get('port'), function(){
     "scripts": {
         "start": "node app"
     },
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
     "dependencies": {
         "express": "3.1.0",
         "nconf": "~0.6.7",
         "mysql": "~2.0.0",
-        "extdirect":"~0.9.7"
+        "extdirect":"~0.9.9"
     }
 }
 ````
@@ -141,7 +145,7 @@ http.createServer(app).listen(app.get('port'), function(){
 ````
 # *** Touch application modifications ***
 
-For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file:
+For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
 ````
 Ext.require([
     'Ext.direct.*'
@@ -150,6 +154,10 @@ Ext.require([
 Ext.onReady(function(){
     Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
+
+//Ext.application({
+//.. your app code here
+
 ````
 
 /public/index.html(add the line for requesting API): 
@@ -282,16 +290,15 @@ Index file /public/index.html
 <head>
     <meta charset="UTF-8">
     <title>DesktopDirect</title>
-    <!-- Ext.Direct -->
-    <script src="/directapi"></script>
     <!-- <x-compile> -->
         <!-- <x-bootstrap> -->
             <link rel="stylesheet" href="bootstrap.css">
             <script src="ext/ext-dev.js"></script>
             <script src="bootstrap.js"></script>
         <!-- </x-bootstrap> -->
-        <script src="app/app.js"></script>
+        <script src="app.js"></script>
     <!-- </x-compile> -->
+    <script src="/directapi"></script>
 </head>
 <body></body>
 </html>
@@ -406,48 +413,53 @@ When dealing with forms that submit via submit api method or upload a file,
 remember to mark your method with formHandler, as shown below
 ````
     filesubmit: function(params, files, callback/*formHandler*/){
-       // console.log(params, files)
+            // console.log(params, files)
 
-        // Do something with uploaded file, e.g. move to another location
-        var fs = require('fs'),
-            file = files.photo,
-            tmp_path = file.path;
+            // Do something with uploaded file, e.g. move to another location
+            var fs = require('fs'),
+                file = files.photo,
+                tmp_path = file.path;
 
-        // set where the file should actually exists - in this case it is in the "demo" directory
-        var target_path = './public/demo/' + file.name;
+            // set where the file should actually exists - in this case it is in the "demo" directory
+            var target_path = './public/demo/' + file.name;
 
-        // move the file from the temporary location to the intended location
-        // do it only if there is a file with size
-        if(file.size > 0){
-            try{
-                fs.rename(tmp_path, target_path, function(err) {
-
-                    // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-                    fs.unlink(tmp_path, function() {
-                        if (err) throw err;
-                        callback({
-                            success: true,
-                            msg: 'Uploaded successfully',
-                            size: file.size,
-                            name: file.name
+            // move the file from the temporary location to the intended location
+            // do it only if there is a file with size
+            if(file.size > 0){
+                try{
+                    fs.rename(tmp_path, target_path, function(err) {
+                        if(err){
+                            callback({
+                                success: false,
+                                msg: 'Upload failed',
+                                errors: err.message
+                            });
+                        }
+                        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
+                        fs.unlink(tmp_path, function() {
+                            callback({
+                                success: true,
+                                msg: 'Uploaded successfully',
+                                size: file.size,
+                                name: file.name
+                            });
                         });
                     });
-                });
-            }catch(e) {
+                }catch(e) {
+                    callback({
+                        success: false,
+                        msg: 'Upload failed',
+                        errors: e.message
+                    });
+                }
+            }else{
                 callback({
                     success: false,
-                    msg: 'Upload failed',
-                    errors: e.message
+                    msg: 'No file',
+                    params: params
                 });
             }
-        }else{
-            callback({
-                success: true,
-                msg: 'No file',
-                params: params
-            });
         }
-    }
 };
 
 module.exports = DXFormTest;
