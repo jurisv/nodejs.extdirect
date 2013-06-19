@@ -529,12 +529,17 @@ module.exports = DXLogin;
 For more use cases please refer to ExtJs documentation.
 
 Changelog:
-* 0.9.8 (18 jun 2013):
+* 0.9.9 (19 jun 2013)
+        Added Windows support
+
+* 0.9.8 (18 jun 2013)
         Added Session support plus examples
         Added Proper error handling- failed transactions will be returned as exceptions
         Added Event support
-* 0.9.7 (26 mar 2013):
+
+* 0.9.7 (26 mar 2013)
         Fixed Markdown in Docs
+
 * 0.9.6 (25 Mar 2013):
         Add form handling
         Add form file upload feature
@@ -543,7 +548,5 @@ Changelog:
         Add Code samples in README.md
 
 * 0.9.5 Minimal stable
-* 0.9.0 Public release
 
-Known issues:
-* Currently there is no support for Windows.
+* 0.9.0 Public release
