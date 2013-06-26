@@ -540,7 +540,25 @@ module.exports = DXLogin;
 
 For more use cases please refer to ExtJs documentation.
 
+## Server 'production' vs 'development' mode
+By default Your node.js server is working in development mode, thus effectively spitting out a lot of useful dev-time info.
+As of version 1.0.0 connector will look at the mode and change its behavior upon selection. 
+For development mode it will return packets of type 'exception' whenever it will encounter one.
+For production mode, instead it will return blank 'rpc' packet.
+
+To change mode you have to set environment variable NODE_ENV to production.
+There are 2 options.
+1) in Terminal run the command: export NODE_ENV=production
+2) Add permamently to your .bash_profile file:
+````
+echo export NODE_ENV=production >> ~/.bash_profile
+source ~/.bash_profile
+````
+
 Changelog:
+* 1.0.0 (26 jun 2013)
+        Limit exception type of packets to development mode only
+        Add info on development/production mode settings in docs
 * 0.9.9 (19 jun 2013)
         Added Windows support
 
