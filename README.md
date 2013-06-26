@@ -102,7 +102,7 @@ app.configure('production', function(){
 });
 
 http.createServer(app).listen(app.get('port'), function(){
-    console.log("Express server listening on port " + app.get('port'));
+    console.log("Express server listening on port %d in %s mode", app.get('port'), app.settings.env);
 });
 
 
@@ -124,11 +124,13 @@ http.createServer(app).listen(app.get('port'), function(){
         "express": "3.1.0",
         "nconf": "~0.6.7",
         "mysql": "~2.0.0",
-        "extdirect":"~0.9.9"
+        "extdirect":"~1.0.0"
     }
 }
 ````
-# config.json(if you don't use Mysql you can omit those lines. Be sure to take away all related code then in app.js):
+# config.json
+If you don't use Mysql you can omit those lines. 
+Be sure to take away all related code then in app.js
 ````
 {
     "MySQL_HOSTNAME": "localhost",
