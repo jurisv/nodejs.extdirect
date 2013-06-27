@@ -107,7 +107,7 @@ http.createServer(app).listen(app.get('port'), function(){
 
 
 ````
-#package.json:
+## package.json:
 ````
 {
     "name": "touch-direct",
@@ -128,7 +128,7 @@ http.createServer(app).listen(app.get('port'), function(){
     }
 }
 ````
-# config.json
+## config.json
 If you don't use Mysql you can omit those lines. 
 Be sure to take away all related code then in app.js
 ````
@@ -145,7 +145,7 @@ Be sure to take away all related code then in app.js
     "EXTDIRECT_PREFIX" : "DX"
 }
 ````
-# *** Touch application modifications ***
+## *** Touch application modifications ***
 
 For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
 ````
@@ -168,7 +168,7 @@ Ext.onReady(function(){
     <script id="microloader" type="text/javascript" src="touch/microloader/development.js"></script>
     <script type="text/javascript" src="/directapi"></script>
 ````
-# *** Sample direct methods ***
+## *** Sample direct methods ***
 Create file /direct/DXTodoItem.js :
 ````
 var table = 'todoitem';
@@ -237,7 +237,7 @@ var DXTodoItem  = {
 module.exports = DXTodoItem;
 ````
 
-# *** Configure your application model with direct proxy  ***
+## *** Configure your application model with direct proxy  ***
 ````
 Ext.define('TouchDirect.model.TodoItem', {
     extend: 'Ext.data.Model',
@@ -479,7 +479,7 @@ ExtRemote.DXFormTest.testMe(3,
 
 ````
 
-## Basic serverside methodsa and their callbacks
+## Basic serverside methods and their callbacks
 ````
    //regular functions MUST call callback.
     regularFunction: function(params, callback){
@@ -559,25 +559,31 @@ source ~/.bash_profile
 
 Changelog:
 * 1.0.0 (26 jun 2013)
+
         Limit exception type of packets to development mode only
         Add info on development/production mode settings in docs
+        
 * 0.9.9 (19 jun 2013)
+
         Added Windows support
 
 * 0.9.8 (18 jun 2013)
+
         Added Session support plus examples
-        Added Proper error handling- failed transactions will be returned as exceptions
+        Added Proper error handling- failed transactions will be returned as exceptions        
         Added Event support
 
 * 0.9.7 (26 mar 2013)
+
         Fixed Markdown in Docs
 
-* 0.9.6 (25 Mar 2013):
+* 0.9.6 (25 Mar 2013)
+
         Add form handling
         Add form file upload feature
         Add API generation caching
         Gracefully handle errors
-        Add Code samples in README.md
+        Add Code samples in README.md        
 
 * 0.9.5 Minimal stable
 
