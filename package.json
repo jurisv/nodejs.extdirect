@@ -1,6 +1,6 @@
 {
   "name": "extdirect",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "description": "Ext.Direct connector for Sencha Touch/ExtJs",
   "main": "index.js",
   "scripts": {
@@ -8,14 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:Stju/extdirect.git"
+    "url": "git@github.com:jurisv/extdirect.git"
   },
   "keywords": [
+    "ext",
+    "direct",
     "sencha",
     "touch",
     "extjs",
     "extdirect",
     "remoting",
+    "rpc",
+    "connector",
     "api"
   ],
   "author": "Juris Vecvanags",

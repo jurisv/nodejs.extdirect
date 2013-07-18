@@ -558,6 +558,8 @@ source ~/.bash_profile
 ````
 
 Changelog:
+* 1.0.0 Announced and pushed to npmjs repository (18 july 2013)
+
 * 1.0.0 (26 jun 2013)
 
         Limit exception type of packets to development mode only
