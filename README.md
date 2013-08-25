@@ -1,7 +1,7 @@
-# Sencha Ext.Direct connector for node.js 
+## Sencha Ext.Direct connector for node.js
 
-Compatibility:
-* Sencha Touch 2.1.x / 2.2
+### Compatibility:
+* Sencha Touch 2.1.x / 2.2 /2.3 beta
 * ExtJs 4.2.x
 
 ### Server side implementation:
@@ -19,7 +19,7 @@ Step1: Create the folder where your node.js server will reside and then add the 
 
 Step 2: Edit app.js content to match example below:
 Note: This example is using MySQL database
-### File app.js:
+#### File app.js:
 
 ````
 var express = require('express'),
@@ -143,7 +143,7 @@ http.createServer(app).listen(app.get('port'), function(){
 });
 
 ````
-### package.json:
+#### File package.json:
 ````
 {
     "name": "touch-direct",
@@ -166,11 +166,11 @@ http.createServer(app).listen(app.get('port'), function(){
 ````
 Step 3: Edit config.json file:
 
-### config.json
 If you don't use Mysql or have any other database e.g. MongoDb, you can exclude config property related to database, but then be sure to take away all related code in app.js . It still might be a good idea to keep all Db config properties in this file.
 <b>Important:</b> Since version 1.1.0 all properties are stored in this config file and there is no need to update app.js if you are using vanilla reference implementation.
 Update config parameters that are relevant to your implementation.
 
+#### File config.json
 ````
 {
     "ServerConfig": {
@@ -205,9 +205,9 @@ Update config parameters that are relevant to your implementation.
     }
 }
 ````
-Step 3: Create and modify your Sencah Touch / ExtJs application.
+Step 4: Create and modify your Sencah Touch / ExtJs application.
 
-## *** Touch application modifications ***
+### *** Touch application modifications ***
 
 For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
 ````
@@ -216,7 +216,7 @@ Ext.require([
 ]);
 
 Ext.onReady(function(){
-    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
+    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API); //Must match namespace and apiName defined in node.js server
 });
 
 //Ext.application({
@@ -230,7 +230,7 @@ Ext.onReady(function(){
     <script id="microloader" type="text/javascript" src="touch/microloader/development.js"></script>
     <script type="text/javascript" src="/directapi"></script>
 ````
-## *** Sample direct methods ***
+### *** Sample direct methods ***
 Create file /direct/DXTodoItem.js :
 ````
 var table = 'todoitem';
@@ -299,7 +299,7 @@ var DXTodoItem  = {
 module.exports = DXTodoItem;
 ````
 
-## *** Configure your application model with direct proxy  ***
+### *** Configure your application model with direct proxy  ***
 ````
 Ext.define('TouchDirect.model.TodoItem', {
     extend: 'Ext.data.Model',
@@ -332,9 +332,7 @@ Ext.define('TouchDirect.model.TodoItem', {
 });
 ````
 
-##  *** ExtJS 4.2.x ***
-
-Server-side structure remains the same as for Sencha Touch.
+###  *** ExtJS Application modifications ***
 
 For your ExtJs app add in /public/app.js :
 ````
@@ -347,7 +345,7 @@ Ext.onReady(function(){
 });
 ````
 
-Index file /public/index.html
+#### Index file /public/index.html  add script containing directapi.
 ````
 <!DOCTYPE HTML>
 <html>
@@ -396,7 +394,8 @@ store: {
         },
 ````
 Even more interesting is the file upload case:
-## ExtJs config
+
+#### ExtJs config
 ````        
         {
                         xtype:'form',
@@ -441,9 +440,10 @@ Even more interesting is the file upload case:
                         ]
                     }
 ````
-## node.js sample for upload/submit/test/load 
 
-File:DXFormTest
+### node.js sample for upload/submit/test/load
+
+#### File:DXFormTest
 ````
 var DXFormTest = {
     testMe: function(params, callback){
@@ -541,7 +541,7 @@ ExtRemote.DXFormTest.testMe(3,
 
 ````
 
-## Basic serverside methods and their callbacks
+### Basic serverside methods and their callbacks
 ````
    //regular functions MUST call callback.
     regularFunction: function(params, callback){
@@ -562,7 +562,7 @@ ExtRemote.DXFormTest.testMe(3,
     }
 ````
 
-## Session support
+### Session support
 
 As of version 1.1.0 sessions are supported within reference implementation. Set enableSessions to true.
 When session support is enabled, all methods will be feed with extra last argument which has sessionID.
@@ -607,12 +607,14 @@ source ~/.bash_profile
 ````
 
 
-Changelog:
+### Changelog:
 * 1.1.0 (24 aug 2013)
 
         Update docs and sample server-side code to include CORS support
         Configs for protocol, server, port
         Refactor to pass one config object instead of multiple parameters
+        New config parameters.
+        Renamed some configs that were confusing. Check ExtDirectConfig config.
         <b>Important</b> Upgrade from v1.0.0:
         Adjust node.js main app.js and config.json files. Router and Api functions now expect config object instead of separate ordered parameters.
 
