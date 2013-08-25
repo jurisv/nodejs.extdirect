@@ -4,18 +4,23 @@ Compatibility:
 * Sencha Touch 2.1.x / 2.2
 * ExtJs 4.2.x
 
-Usage (Sencha Touch):
-*** Create file/folder structure like this ***
+### Server side implementation:
+
+Step1: Create the folder where your node.js server will reside and then add the following file/folder structure:
+
 ````
 /app.js
 /config.json
 /package.json
-/public/ -> here you generate ST application using Sencha CMD
-/direct/ -> here you will place all Ext.Direct files
-/uploads/ -> file upload folder (must be writable by node.js)
+/public -> here you generate Sencha Touch/ ExtJs application using Sencha CMD
+/direct -> here you will place all Ext.Direct files
+/uploads -> file upload folder (must be writable by node.js)
 ````
-### This example is using MySQL database
+
+Step 2: Edit app.js content to match example below:
+Note: This example is using MySQL database
 ### File app.js:
+
 ````
 var express = require('express'),
     nconf = require('nconf'),
@@ -26,71 +31,103 @@ var express = require('express'),
 
 nconf.env().file({ file: 'config.json'});
 
-var MySQL_HOSTNAME = nconf.get("MySQL_HOSTNAME"),
-    MySQL_PORT = nconf.get("MySQL_PORT"),
-    MySQL_USER = nconf.get("MySQL_USER"),
-    MySQL_PASSWORD = nconf.get("MySQL_PASSWORD"),
-    MySQL_DB = nconf.get("MySQL_DB"),
-
-    EXTDIRECT_PATH = nconf.get("EXTDIRECT_PATH"),
-    EXTDIRECT_NAMESPACE = nconf.get("EXTDIRECT_NAMESPACE"),
-    EXTDIRECT_API_NAME = nconf.get("EXTDIRECT_API_NAME"),
-    EXTDIRECT_PREFIX = nconf.get("EXTDIRECT_PREFIX");
+var ServerConfig = nconf.get("ServerConfig"),
+    MySQLConfig = nconf.get("MySQLConfig"),
+    ExtDirectConfig = nconf.get("ExtDirectConfig");
 
 var app = express();
 
-var connection = function(){
-    var conn = mysql.createConnection({
-        host: MySQL_HOSTNAME,
-        port: MySQL_PORT,
-        user: MySQL_USER,
-        password: MySQL_PASSWORD,
-        database: MySQL_DB
-    });
+if(ServerConfig.enableSessions){
+    //memory store for sessions - change to different storage here to match your implementation.
+    var store  = new express.session.MemoryStore;
+}
 
-    conn.connect(function(err) {
-        if(err){
-            console.error('Connection had errors: ', err.code);
-            process.exit(1);
-        }
-    });
+var mySQL = {
+    connect : function(){
+        var conn = mysql.createConnection({
+            host: MySQLConfig.hostname,
+            port: MySQLConfig.port,
+            user: MySQLConfig.user,
+            password: MySQLConfig.password,
+            database: MySQLConfig.db
+        });
 
-    return conn;
-};
+        conn.connect(function(err) {
+            if(err){
+                console.error('Connection had errors: ', err.code);
+                process.exit(1);
+            }
+        });
 
-var mysqlDisconnect = function(conn){
-    conn.end();
+        return conn;
+    },
+
+    disconnect : function(conn){
+        conn.end();
+    }
 };
 
 // Make MySql connections available globally, so we can access them from within modules
-global['MySQLConnection'] =  {
-    connection : connection,
-    disconnect : mysqlDisconnect
-};
+global['mySQL'] =  mySQL;
 
 app.configure(function(){
-    app.set('port', process.env.PORT || 3000);
-    app.use(express.logger('dev'));
-    app.use(express.bodyParser({uploadDir:'./uploads'})); //take care of body parsing/multipart/files
+
+    app.set('port', process.env.PORT || ServerConfig.port);
+    app.use(express.logger(ServerConfig.logger));
+
+    if(ServerConfig.enableUpload){
+        app.use(express.bodyParser({uploadDir:'./uploads'})); //take care of body parsing/multipart/files
+    }
+
     app.use(express.methodOverride());
-    app.use(express.compress()); //Performance - we tell express to use Gzip compression
-    //app.use(app.router); // enable if you are using routes
-    app.use(express.static(path.join(__dirname, 'public')));
+
+    if(ServerConfig.enableCompression){
+        app.use(express.compress()); //Performance - we tell express to use Gzip compression
+    }
+
+    if(ServerConfig.enableSessions){
+        //Required for session
+        app.use(express.cookieParser());
+        app.use(express.session({ secret: ServerConfig.sessionSecret, store: store }));
+    }
+
+    app.use(express.static(path.join(__dirname, ServerConfig.webRoot)));
 });
 
-app.get('/directapi', function(request, response) {
-    var api = extdirect.getAPI(EXTDIRECT_NAMESPACE, EXTDIRECT_API_NAME, EXTDIRECT_PATH, EXTDIRECT_PREFIX);
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(api);
+//Important to get CORS headers and cross domain functionality
+if(ServerConfig.enableCORS){
+    app.all('*', function(req, res, next) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    });
+
+    app.options(ExtDirectConfig.classPath, function(request, response) {
+        response.writeHead(200, {'Allow': ServerConfig.allowedMethods});
+        response.end();
+    });
+}
+
+//GET method returns API
+app.get(ExtDirectConfig.apiPath, function(request, response) {
+    try{
+        var api = extdirect.getAPI(ExtDirectConfig);
+        response.writeHead(200, {'Content-Type': 'application/json'});
+        response.end(api);
+    }catch(e){
+        console.log(e);
+    }
 });
 
-app.get(EXTDIRECT_PATH, function(request, response) {
+// Ignoring any GET requests on class path
+app.get(ExtDirectConfig.classPath, function(request, response) {
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end(JSON.stringify({success:false, msg:'Unsupported method. Use POST instead.'}));
 });
 
-app.post(EXTDIRECT_PATH, function(request, response) {
-    extdirect.processRoute(request, response, EXTDIRECT_PATH);
+// POST request process route and calls class
+app.post(ExtDirectConfig.classPath, function(request, response) {
+    extdirect.processRoute(request, response, ExtDirectConfig);
 });
 
 app.configure('development', function(){
@@ -105,13 +142,12 @@ http.createServer(app).listen(app.get('port'), function(){
     console.log("Express server listening on port %d in %s mode", app.get('port'), app.settings.env);
 });
 
-
 ````
-## package.json:
+### package.json:
 ````
 {
     "name": "touch-direct",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
         "start": "node app"
@@ -124,27 +160,53 @@ http.createServer(app).listen(app.get('port'), function(){
         "express": "3.1.0",
         "nconf": "~0.6.7",
         "mysql": "~2.0.0",
-        "extdirect":"~1.0.0"
+        "extdirect":"~1.1.0"
     }
 }
 ````
-## config.json
-If you don't use Mysql you can omit those lines. 
-Be sure to take away all related code then in app.js
+Step 3: Edit config.json file:
+
+### config.json
+If you don't use Mysql or have any other database e.g. MongoDb, you can exclude config property related to database, but then be sure to take away all related code in app.js . It still might be a good idea to keep all Db config properties in this file.
+<b>Important:</b> Since version 1.1.0 all properties are stored in this config file and there is no need to update app.js if you are using vanilla reference implementation.
+Update config parameters that are relevant to your implementation.
+
 ````
 {
-    "MySQL_HOSTNAME": "localhost",
-    "MySQL_PORT": 3306,
-    "MySQL_USER": "script",
-    "MySQL_PASSWORD": "JxJSNa3stRYSV68j",
-    "MySQL_DB": "demo",
+    "ServerConfig": {
+        "port": 3000,
+        "logger": "dev",
+        "enableUpload": true,
+        "enableCompression": true,
+        "webRoot": "/public",
+        "enableSessions": true,
+        "sessionSecret": "vdW3F6y3506h",
+        "enableCORS": true,
+        "allowedMethods": "GET,POST,OPTIONS"
+    },
 
-    "EXTDIRECT_NAMESPACE" : "ExtRemote",
-    "EXTDIRECT_API_NAME" : "REMOTING_API",
-    "EXTDIRECT_PATH" : "/direct",
-    "EXTDIRECT_PREFIX" : "DX"
+    "MySQLConfig": {
+        "hostname": "localhost",
+        "port": 3306,
+        "user": "script",
+        "password": "JxJSNa3stRYSV68j",
+        "db": "demo"
+    },
+
+    "ExtDirectConfig": {
+        "namespace": "ExtRemote",
+        "apiName": "REMOTING_API",
+        "apiPath": "/directapi",
+        "classPath": "/direct",
+        "classPrefix": "DX",
+        "server": "localhost",
+        "port": "3000",
+        "protocol": "http"
+    }
 }
 ````
+Step 3: Create and modify your Sencah Touch / ExtJs application.
+
 ## *** Touch application modifications ***
 
 For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
@@ -172,11 +234,11 @@ Ext.onReady(function(){
 Create file /direct/DXTodoItem.js :
 ````
 var table = 'todoitem';
-var mysql = MySQLConnection;
+var mysql = mySQL;
 
 var DXTodoItem  = {
     create: function(params, callback){
-        var conn = mysql.connection();
+        var conn = mysql.connect();
         delete params['id'];
         conn.query('INSERT INTO ' + table + ' SET ?', params, function(err, result) {
             if (err) throw err;
@@ -192,7 +254,7 @@ var DXTodoItem  = {
 
     //callback as last argument in mandatory
     read: function(params, callback){
-        var conn = mysql.connection();
+        var conn = mysql.connect();
 
         var sql = 'SELECT * from ' + table;
         // this sample implementation supports 1 sorter, to have more than one, you have to loop and alter query
@@ -215,7 +277,7 @@ var DXTodoItem  = {
     },
 
     update: function(params, callback){
-        var conn = mysql.connection();
+        var conn = mysql.connect();
 
         conn.query('UPDATE ' + table + ' SET ? where id = ' + conn.escape(params['id']), params, function(err, result) {
             if (err) throw err;
@@ -225,7 +287,7 @@ var DXTodoItem  = {
     },
 
     destroy: function(params, callback){
-        var conn = mysql.connection();
+        var conn = mysql.connect();
 
         conn.query('DELETE FROM ' + table + ' WHERE id = ?', params['id'], function(err, rows, fields) {
             callback({success:true, id:params['id']});
@@ -502,24 +564,11 @@ ExtRemote.DXFormTest.testMe(3,
 
 ## Session support
 
-Add session support inside nodes main app.js file:
-````
-//memory store for sessions - change to different storage here if you want so.
-var store  = new express.session.MemoryStore;
-
-app.configure(function(){
-    app.set('port', process.env.PORT || 3000);
-    app.use(express.logger('dev'));
-    app.use(express.bodyParser({uploadDir:'./uploads'})); //take care of body parsing/multipart/files
-    app.use(express.methodOverride());
-
-    //Required for session
-    app.use(express.cookieParser());
-    app.use(express.session({ secret: 'something', store: store }));
-````
-
-In this case all methods will be feed with extra last argument which is sessionID.
+As of version 1.1.0 sessions are supported within reference implementation. Set enableSessions to true.
+When session support is enabled, all methods will be feed with extra last argument which has sessionID.
 You have to implement authentication and session handling process according to your business requirements.
+Example code:
+
 ````
 var DXLogin  = {
 // callback as last argument and mandatory
@@ -557,8 +606,19 @@ echo export NODE_ENV=production >> ~/.bash_profile
 source ~/.bash_profile
 ````
 
+
 Changelog:
-* 1.0.0 Announced and pushed to npmjs repository (18 july 2013)
+* 1.1.0 (24 aug 2013)
+
+        Update docs and sample server-side code to include CORS support
+        Configs for protocol, server, port
+        Refactor to pass one config object instead of multiple parameters
+        <b>Important</b> Upgrade from v1.0.0:
+        Adjust node.js main app.js and config.json files. Router and Api functions now expect config object instead of separate ordered parameters.
+
+* 1.0.0 (18 july 2013)
+
+        Announced and pushed to npmjs repository
 
 * 1.0.0 (26 jun 2013)
 
