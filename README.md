@@ -617,6 +617,9 @@ source ~/.bash_profile
 
 
 ### Changelog:
+* 1.1.1 (15 oct 2013)
+        Update Docs. Fix MySQL examples to prevent SQL Injection vulnerabilities.
+
 * 1.1.0 (24 aug 2013)
 
         Update docs and sample server-side code to include CORS support
