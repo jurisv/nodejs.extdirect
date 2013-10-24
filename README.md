@@ -614,9 +614,42 @@ There are 2 options.
 echo export NODE_ENV=production >> ~/.bash_profile
 source ~/.bash_profile
 ````
+### Explicit 'exception' transactions
+
+Sometimes you want to ensure that server won't crash during some actions, and/or send data back to client during process.
+To do that you have to call the callback with additional parameters, like in this example:
+
+````
+
+conn.query(totalQuery, function(err, rowsTotal, fields) {
+    mysql.disconnect(conn); //release connection
+
+    //if (err) throw err;
+    // Usually we throw an error like in the line above. This will throw an error to node.js console and exit the application.
+    // As this is totally correct and common practice, sometimes we want to prevent that and treat the error differently
+
+    // This is an example how to send back hard exception
+    // Change totalQuery syntax, so it becomes invalid and observe the results
+    // Client side won't break and if not in production mode, you wil receive message stating what was the error and where it was found
+    // Same applies to any try{..some code that may fail..}catch(err){callback(null, 'exception', err);}
+    if(err){
+        callback(null, 'exception', err);
+    }else{
+        callback({
+            success: true,
+            data: rows,
+            total: rowsTotal[0].totals
+        });
+    }
+});
+
+````
 
 
 ### Changelog:
+* 1.2.0 (23 oct 2013)
+        Add feature to explicitly create transaction of type 'exception'
+
 * 1.1.1 (15 oct 2013)
         Update Docs. Fix MySQL examples to prevent SQL Injection vulnerabilities.
 
