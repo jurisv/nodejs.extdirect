@@ -653,11 +653,30 @@ var DXLogin  = {
         console.log(request);
         console.log(response);
 
+        /*
+         You have full access to all request properties
+         */
+        console.log(request.session); //e.g. retrieve session data
+
         response.header('My-Custom-Header ', '1234567890');
         /*
          Some code here to check login
          */
         callback({success:true, message:'Login successful'});
+
+
+        /*
+        //more detailed callback
+        callback({
+            success: true,
+            message: 'Login successful',
+            data: {
+                firstName: 'Juris',
+                lastName: 'Vecvanags',
+                cookie: request.session.cookie
+            }
+        });
+        */
     }
 };
 
