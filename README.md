@@ -1,11 +1,13 @@
 ### Sencha Ext.Direct connector for node.js
 
-## Some examples might be outdated inside docs. They will be updated soon.
-Meanwhile please check out the examples located at : https://github.com/jurisv/extdirect.examples
-
 #### Compatibility:
 * Sencha Touch 2.3+
 * ExtJs 4.2.x+
+
+#### Some examples might be outdated inside docs. They will be updated soon.
+
+Meanwhile please check out the examples located at : https://github.com/jurisv/extdirect.examples
+
 
 #### Server side implementation:
 
