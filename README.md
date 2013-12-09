@@ -1,5 +1,8 @@
 ### Sencha Ext.Direct connector for node.js
 
+## Some examples might be outdated inside docs. They will be updated soon.
+Meanwhile please check out the examples located at : https://github.com/jurisv/extdirect.examples
+
 #### Compatibility:
 * Sencha Touch 2.3+
 * ExtJs 4.2.x+
@@ -160,7 +163,7 @@ http.createServer(app).listen(app.get('port'), function(){
         "express": "3.1.0",
         "nconf": "~0.6.7",
         "mysql": "~2.0.0",
-        "extdirect":"~1.1.0"
+        "extdirect":"~1.3.1"
     }
 }
 ```
@@ -179,10 +182,15 @@ Update config parameters that are relevant to your implementation.
         "enableUpload": true,
         "enableCompression": true,
         "webRoot": "/public",
+        "fileUploadFolder": "./uploads",
         "enableSessions": true,
         "sessionSecret": "vdW3F6y3506h",
         "enableCORS": true,
-        "allowedMethods": "GET,POST,OPTIONS"
+        "AccessControlAllowOrigin": "*",
+        "AccessControlAllowMethods": "GET,PUT,POST,DELETE,OPTIONS",
+        "AccessControlAllowHeaders": "Origin, X-Requested-With, Content-Type, Accept",
+        "AccessControlAllowCredentials": true,
+        "AccessControlMaxAge": 3600
     },
 
     "MySQLConfig": {
@@ -201,7 +209,8 @@ Update config parameters that are relevant to your implementation.
         "classPrefix": "DX",
         "server": "localhost",
         "port": "3000",
-        "protocol": "http"
+        "protocol": "http",
+        "appendRequestResponseObjects": true
     }
 }
 ```
@@ -760,6 +769,7 @@ It's work in progress, and hopefully it has enough code to get you started.
 
 ### Changelog:
 * 1.3.1 (9 nov 2013)
+
         Fix parameter mismatch in api.js.
         <b>Important!</b>
         If you have floating amount of parameters instead of 1 object 'parameters' this might be a breaking change! Stay with version 1.2.0 or make appropriate changes.
