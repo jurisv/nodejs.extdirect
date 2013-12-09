@@ -542,7 +542,8 @@ var DXFormTest = {
 When dealing with forms that submit via submit api method or upload a file,
 remember to mark your method with formHandler, as shown below
 ```
-    filesubmit: function(params, files, callback/*formHandler*/){
+        filesubmit: function(params, callback, sessionID, request, response/*formHandler*/){
+            var files = request.files; //get files from request object
             // console.log(params, files)
 
             // Do something with uploaded file, e.g. move to another location
@@ -590,9 +591,7 @@ remember to mark your method with formHandler, as shown below
                 });
             }
         }
-};
 
-module.exports = DXFormTest;
 ```
 
 NOTE: Remember, that you can always invoke server-side methods if you need them, and receive the response inside the callback.
@@ -741,10 +740,16 @@ It's work in progress, and hopefully it has enough code to get you started.
 
 
 ### Changelog:
+* 1.3.1 (9 nov 2013)
+        Fix parameter mismatch in api.js.
+        <b>Important!</b>
+        If you have floating amount of parameters instead of 1 object 'parameters' this might be a breaking change! Stay with version 1.2.0 or make appropriate changes.
+        Changed file upload example. As we have request object as parameter, you can retrieve uploaded file/s directly from that object
+
 * 1.3.0 (9 nov 2013)
 
         Add feature to access request and response objects from DX method.
-        Standardize that DX method signature (always receive 5 parameters). Only exception is file uploads.
+        Standardize that DX method signature (all methods receive 5 parameters).1st is params from client, then callback, sessionID and request/response if configured to pass those parameters.
         Add related documentation, link to examples.
 
 * 1.2.0 (23 oct 2013)
