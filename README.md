@@ -4,7 +4,7 @@
 * Sencha Touch 2.3+
 * ExtJs 4.2.x+
 
-#### <span style="color:#f55">Some examples might be outdated inside docs. They will be updated soon.</span>
+#### Some examples might be outdated inside docs. They will be updated soon.
 
 Meanwhile please check out the examples located at : https://github.com/jurisv/extdirect.examples
 
