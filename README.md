@@ -1,21 +1,21 @@
 ### Sencha Ext.Direct connector for node.js
 
-### Compatibility:
-* Sencha Touch 2.1.x / 2.2 /2.3 beta
-* ExtJs 4.2.x
+#### Compatibility:
+* Sencha Touch 2.3+
+* ExtJs 4.2.x+
 
-### Server side implementation:
+#### Server side implementation:
 
 Step1: Create the folder where your node.js server will reside and then add the following file/folder structure:
 
-````
+```
 /app.js
 /config.json
 /package.json
 /public -> here you generate Sencha Touch/ ExtJs application using Sencha CMD
 /direct -> here you will place all Ext.Direct files
 /uploads -> file upload folder (must be writable by node.js)
-````
+```
 
 Step 2: Edit app.js content to match example below:
 Note: This example is using MySQL database
@@ -142,9 +142,9 @@ http.createServer(app).listen(app.get('port'), function(){
     console.log("Express server listening on port %d in %s mode", app.get('port'), app.settings.env);
 });
 
-````
+```
 #### File package.json:
-````
+```
 {
     "name": "touch-direct",
     "version": "1.0.0",
@@ -163,7 +163,7 @@ http.createServer(app).listen(app.get('port'), function(){
         "extdirect":"~1.1.0"
     }
 }
-````
+```
 Step 3: Edit config.json file:
 
 If you don't use Mysql or have any other database e.g. MongoDb, you can exclude config property related to database, but then be sure to take away all related code in app.js . It still might be a good idea to keep all Db config properties in this file.
@@ -171,7 +171,7 @@ If you don't use Mysql or have any other database e.g. MongoDb, you can exclude 
 Update config parameters that are relevant to your implementation.
 
 #### File config.json
-````
+```
 {
     "ServerConfig": {
         "port": 3000,
@@ -204,13 +204,13 @@ Update config parameters that are relevant to your implementation.
         "protocol": "http"
     }
 }
-````
+```
 Step 4: Create and modify your Sencah Touch / ExtJs application.
 
-### *** Touch application modifications ***
+#### *** Touch application modifications ***
 
 For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
-````
+```
 Ext.require([
     'Ext.direct.*'
 ]);
@@ -222,17 +222,71 @@ Ext.onReady(function(){
 //Ext.application({
 //.. your app code here
 
-````
+```
 
 /public/index.html(add the line for requesting API): 
-````
+```
 <!-- The line below must be kept intact for Sencha Command to build your application -->
     <script id="microloader" type="text/javascript" src="touch/microloader/development.js"></script>
     <script type="text/javascript" src="/directapi"></script>
-````
-### *** Sample direct methods ***
+```
+
+#### Method signature and structure of method
+
+```
+    // method signature has 5 parameters
+    /**
+     *
+     * @param params object with received parameters
+     * @param callback callback function to call at the end of current method
+     * @param sessionID - current session ID if "enableSessions" set to true, otherwise null
+     * @param request only if "appendRequestResponseObjects" enabled
+     * @param response only if "appendRequestResponseObjects" enabled
+     */
+    authenticate: function(params, callback, sessionID, request, response){
+        console.log(params)
+        console.log(sessionID);
+        console.log(request);
+        console.log(response);
+
+        /*
+        You have full access to all request properties
+        */
+        console.log(request.session); //e.g. access session data
+
+        /*
+        You can directly modify your response payload, but be careful!
+        */
+        response.header('My-Custom-Header ', '1234567890');
+
+        /*
+        Business logic goes here
+        */
+
+        /*
+        Call callback function at the end
+        */
+        callback({success:true});
+
+        /*
+        //or add some payload data
+        callback({
+            success:true,
+            message:'Login successful',
+            data:{
+                name: 'Juris',
+                surname: 'Vecvanags'
+            }
+        });
+        */
+    }
+
+```
+
+
+#### *** Sample direct methods ***
 Create file /direct/DXTodoItem.js :
-````
+```
 var table = 'todoitem';
 var mysql = mySQL;
 
@@ -306,10 +360,10 @@ var DXTodoItem  = {
 };
 
 module.exports = DXTodoItem;
-````
+```
 
-### *** Configure your application model with direct proxy  ***
-````
+#### *** Configure your application model with direct proxy  ***
+```
 Ext.define('TouchDirect.model.TodoItem', {
     extend: 'Ext.data.Model',
     config: {
@@ -339,12 +393,12 @@ Ext.define('TouchDirect.model.TodoItem', {
         }
     }
 });
-````
+```
 
-###  *** ExtJS Application modifications ***
+####  *** ExtJS Application modifications ***
 
 For your ExtJs app add in /public/app.js :
-````
+```
 Ext.require([
     'Ext.direct.*'
 ]);
@@ -352,10 +406,10 @@ Ext.require([
 Ext.onReady(function(){
     Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
-````
+```
 
 #### Index file /public/index.html  add script containing directapi.
-````
+```
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -373,21 +427,23 @@ Ext.onReady(function(){
 </head>
 <body></body>
 </html>
-````
+```
 
 Then for your directCfg, and api definitions use string literals of methods,
 like this:
 
-Form:
-````
+#####Form:
+
+```
 api:{
       load: 'ExtRemote.DXFormTest.load',
       submit:'ExtRemote.DXFormTest.submit'
 }
 ````
-Grid store with directFn:
 
-````
+#####Grid store with directFn:
+
+```
 store: {
             model: 'Company',
             remoteSort: true,
@@ -401,11 +457,11 @@ store: {
                 directFn: 'TestAction.getGrid'
             }
         },
-````
-Even more interesting is the file upload case:
+```
+####Even more interesting is the file upload case:
 
 #### ExtJs config
-````        
+```
         {
                         xtype:'form',
                         title: 'File upload',
@@ -448,12 +504,12 @@ Even more interesting is the file upload case:
                             }
                         ]
                     }
-````
+```
 
-### node.js sample for upload/submit/test/load
+#### node.js sample for upload/submit/test/load
 
 #### File:DXFormTest
-````
+```
 var DXFormTest = {
     testMe: function(params, callback){
         callback({
@@ -481,10 +537,11 @@ var DXFormTest = {
         });
 
     },
-````
+```
+
 When dealing with forms that submit via submit api method or upload a file,
 remember to mark your method with formHandler, as shown below
-````
+```
     filesubmit: function(params, files, callback/*formHandler*/){
             // console.log(params, files)
 
@@ -536,22 +593,23 @@ remember to mark your method with formHandler, as shown below
 };
 
 module.exports = DXFormTest;
-````
+```
 
 NOTE: Remember, that you can always invoke server-side methods if you need them, and receive the response inside the callback.
 This way you are not limited to existing prebuilt use cases in different widgets.
 Sample call would be simple as this:
-````
+
+```
 ExtRemote.DXFormTest.testMe(3,
     function(res){
         console.dir(res);
     }
 );
 
-````
+```
 
-### Basic serverside methods and their callbacks
-````
+#### Basic serverside methods and their callbacks
+```
    //regular functions MUST call callback.
     regularFunction: function(params, callback){
         callback({msg: params});
@@ -569,38 +627,48 @@ ExtRemote.DXFormTest.testMe(3,
 
         //if there will be other methods in batch, processing will continue for next transaction
     }
-````
+```
 
 ### Session support
 
 As of version 1.1.0 sessions are supported within reference implementation. Set enableSessions to true.
-When session support is enabled, all methods will be feed with extra last argument which has sessionID.
+When session support is enabled, on all methods 3rd parameter will be set to sessionID otherwise it's value will be null.
 You have to implement authentication and session handling process according to your business requirements.
 Example code:
 
-````
+```
 var DXLogin  = {
-// callback as last argument and mandatory
-// If session support is enabled globally, then there will be the 3rd argument accessible via arguments[arguments.length-1]
+    // method signature has 5 parameters
+    /**
+     *
+     * @param params object with received parameters
+     * @param callback callback function to call at the end of current method
+     * @param sessionID - current session ID if "enableSessions" set to true, otherwise null
+     * @param request only if "appendRequestResponseObjects" enabled
+     * @param response only if "appendRequestResponseObjects" enabled
+     */
+    authenticate: function(params, callback, sessionID, request, response){
+        var username = params.username;
+        var password = params.password;
+        console.log(sessionID);
+        console.log(request);
+        console.log(response);
 
-    authenticate: function(params, callback){
-//      var username = params.username;
-//      var password = params.password;
-        console.log(arguments[arguments.length-1]); //this holds sessionID !
-
+        response.header('My-Custom-Header ', '1234567890');
         /*
-        Some code here to check login
-        */
+         Some code here to check login
+         */
         callback({success:true, message:'Login successful'});
     }
 };
 
 module.exports = DXLogin;
-````
+```
 
 For more use cases please refer to ExtJs documentation.
 
-## Server 'production' vs 'development' mode
+### Server 'production' vs 'development' mode
+
 By default Your node.js server is working in development mode, thus effectively spitting out a lot of useful dev-time info.
 As of version 1.0.0 connector will look at the mode and change its behavior upon selection. 
 For development mode it will return packets of type 'exception' whenever it will encounter one.
@@ -610,16 +678,16 @@ To change mode you have to set environment variable NODE_ENV to production.
 There are 2 options.
 1) in Terminal run the command: export NODE_ENV=production
 2) Add permamently to your .bash_profile file:
-````
+```
 echo export NODE_ENV=production >> ~/.bash_profile
 source ~/.bash_profile
-````
+```
 ### Explicit 'exception' transactions
 
 Sometimes you want to ensure that server won't crash during some actions, and/or send data back to client during process.
 To do that you have to call the callback with additional parameters, like in this example:
 
-````
+```
 
 conn.query(totalQuery, function(err, rowsTotal, fields) {
     mysql.disconnect(conn); //release connection
@@ -643,14 +711,48 @@ conn.query(totalQuery, function(err, rowsTotal, fields) {
     }
 });
 
-````
+```
+
+
+### Direct access to request and response objects
+Version 1.3.0 adds this functionality if you configure router with parameter "appendRequestResponseObjects" and set it to true
+Method signatures:
+
+```
+
+requestObjectsEnabled: function(params, callback, sessionID, request, response){
+
+// Your code here
+
+}
+
+requestObjectsDisabled: function(params, callback, sessionID){
+
+// Your code here
+
+}
+
+```
+
+#### Example code
+Sample applications for Touch and ExtJs can be found here: https://github.com/jurisv/extdirect.examples
+
+It's work in progress, and hopefully it has enough code to get you started.
 
 
 ### Changelog:
+* 1.3.0 (9 nov 2013)
+
+        Add feature to access request and response objects from DX method.
+        Standardize that DX method signature (always receive 5 parameters). Only exception is file uploads.
+        Add related documentation, link to examples.
+
 * 1.2.0 (23 oct 2013)
+
         Add feature to explicitly create transaction of type 'exception'
 
 * 1.1.1 (15 oct 2013)
+
         Update Docs. Fix MySQL examples to prevent SQL Injection vulnerabilities.
 
 * 1.1.0 (24 aug 2013)
