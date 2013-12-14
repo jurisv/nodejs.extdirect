@@ -4,247 +4,115 @@
 * Sencha Touch 2.3+
 * ExtJs 4.2.x+
 
-#### Some examples might be outdated inside docs. They will be updated soon.
+#### Example code
+Sample applications for Touch and ExtJs can be found here: https://github.com/jurisv/extdirect.examples
 
-Meanwhile please check out the examples located at : https://github.com/jurisv/extdirect.examples
+This covers most use cases
+
+ExtJs:
+
+    * Application structure with API provider
+    * Grid CRUD Master-detail
+    * Cookie / Session
+    * Direct method call, shows regular call and onw that has hard exception (syntax error)
+    * Form Load / Submit
+    * Form file upload (Cross domain upload is not supported!)
+    * Tree root / child dynamic load
+
+Sencha Touch:
+
+    * Application structure with API provider
+    * List read using directFn
+    * Form load / submit
 
 
-#### Server side implementation:
+####Please refer to provided examples for up to date sample implementation
 
-Step1: Create the folder where your node.js server will reside and then add the following file/folder structure:
+-
 
-```
-/app.js
-/config.json
-/package.json
-/public -> here you generate Sencha Touch/ ExtJs application using Sencha CMD
-/direct -> here you will place all Ext.Direct files
-/uploads -> file upload folder (must be writable by node.js)
-```
+###Client app modifications to support Ext.Direct
 
-Step 2: Edit app.js content to match example below:
-Note: This example is using MySQL database
-#### File app.js:
+This new approach fully works both in development and production modes.
+No changes in index.html file are required.
 
-````
-var express = require('express'),
-    nconf = require('nconf'),
-    http = require('http'),
-    path = require('path'),
-    mysql = require('mysql'),
-    extdirect = require('extdirect');
+####Touch
 
-nconf.env().file({ file: 'config.json'});
+Create new class inside your app folder and name ir DirectAPI.js
 
-var ServerConfig = nconf.get("ServerConfig"),
-    MySQLConfig = nconf.get("MySQLConfig"),
-    ExtDirectConfig = nconf.get("ExtDirectConfig");
+File DirectAPI.js
+```js
+Ext.define('DemoTouch.DirectAPI', {
 
-var app = express();
+     //Require Ext.Direct classes
 
-if(ServerConfig.enableSessions){
-    //memory store for sessions - change to different storage here to match your implementation.
-    var store  = new express.session.MemoryStore;
-}
+    requires: ['Ext.direct.*']
+}, function() {
+    var Loader = Ext.Loader,
+        wasLoading = Loader.isLoading;
 
-var mySQL = {
-    connect : function(){
-        var conn = mysql.createConnection({
-            host: MySQLConfig.hostname,
-            port: MySQLConfig.port,
-            user: MySQLConfig.user,
-            password: MySQLConfig.password,
-            database: MySQLConfig.db
-        });
+    //Loading API
+    Loader.loadScriptFile('http://localhost:3000/directapi', Ext.emptyFn, Ext.emptyFn, null, true);
+    Loader.isLoading = wasLoading;
 
-        conn.connect(function(err) {
-            if(err){
-                console.error('Connection had errors: ', err.code);
-                process.exit(1);
-            }
-        });
-
-        return conn;
-    },
-
-    disconnect : function(conn){
-        conn.end();
-    }
-};
-
-// Make MySql connections available globally, so we can access them from within modules
-global['mySQL'] =  mySQL;
-
-app.configure(function(){
-
-    app.set('port', process.env.PORT || ServerConfig.port);
-    app.use(express.logger(ServerConfig.logger));
-
-    if(ServerConfig.enableUpload){
-        app.use(express.bodyParser({uploadDir:'./uploads'})); //take care of body parsing/multipart/files
-    }
-
-    app.use(express.methodOverride());
-
-    if(ServerConfig.enableCompression){
-        app.use(express.compress()); //Performance - we tell express to use Gzip compression
-    }
-
-    if(ServerConfig.enableSessions){
-        //Required for session
-        app.use(express.cookieParser());
-        app.use(express.session({ secret: ServerConfig.sessionSecret, store: store }));
-    }
-
-    app.use(express.static(path.join(__dirname, ServerConfig.webRoot)));
+    // Add provider. Name must match settings on serverside
+    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
+```
 
-//Important to get CORS headers and cross domain functionality
-if(ServerConfig.enableCORS){
-    app.all('*', function(req, res, next) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        next();
-    });
+File app.js
+```js
+Ext.application({
+    name: 'DemoTouch',
 
-    app.options(ExtDirectConfig.classPath, function(request, response) {
-        response.writeHead(200, {'Allow': ServerConfig.allowedMethods});
-        response.end();
-    });
-}
+    requires: [
+        'DemoTouch.DirectAPI', // Require API loader
+        'Ext.MessageBox',
+        'DemoTouch.overrides.form.Panel'
+    ],
 
-//GET method returns API
-app.get(ExtDirectConfig.apiPath, function(request, response) {
-    try{
-        var api = extdirect.getAPI(ExtDirectConfig);
-        response.writeHead(200, {'Content-Type': 'application/json'});
-        response.end(api);
-    }catch(e){
-        console.log(e);
-    }
+```
+
+####ExtJS
+Create new class inside your app folder and name ir DirectAPI.js
+
+File DirectAPI.js
+```js
+Ext.define('DemoExtJs.DirectAPI', {
+
+     //Require Ext.Direct classes
+
+    requires: ['Ext.direct.*']
+}, function() {
+    var Loader = Ext.Loader,
+        wasLoading = Loader.isLoading;
+
+    //Loading API
+    Loader.loadScriptFile('http://localhost:3000/directapi', Ext.emptyFn, Ext.emptyFn, null, true);
+    Loader.isLoading = wasLoading;
+
+    // Add provider. Name must match settings on serverside
+    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
 });
-
-// Ignoring any GET requests on class path
-app.get(ExtDirectConfig.classPath, function(request, response) {
-    response.writeHead(200, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify({success:false, msg:'Unsupported method. Use POST instead.'}));
-});
-
-// POST request process route and calls class
-app.post(ExtDirectConfig.classPath, function(request, response) {
-    extdirect.processRoute(request, response, ExtDirectConfig);
-});
-
-app.configure('development', function(){
-    app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
-
-app.configure('production', function(){
-    app.use(express.errorHandler());
-});
-
-http.createServer(app).listen(app.get('port'), function(){
-    console.log("Express server listening on port %d in %s mode", app.get('port'), app.settings.env);
-});
-
 ```
-#### File package.json:
-```
-{
-    "name": "touch-direct",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "start": "node app"
-    },
-    "repository": {
-        "type": "git",
-        "url": ""
-    },
-    "dependencies": {
-        "express": "3.1.0",
-        "nconf": "~0.6.7",
-        "mysql": "~2.0.0",
-        "extdirect":"~1.3.1"
-    }
-}
-```
-Step 3: Edit config.json file:
 
-If you don't use Mysql or have any other database e.g. MongoDb, you can exclude config property related to database, but then be sure to take away all related code in app.js . It still might be a good idea to keep all Db config properties in this file.
-<b>Important:</b> Since version 1.1.0 all properties are stored in this config file and there is no need to update app.js if you are using vanilla reference implementation.
-Update config parameters that are relevant to your implementation.
+Add string 'DemoExtJs.DirectAPI' to requires inside Application.js
+File app.js
 
-#### File config.json
-```
-{
-    "ServerConfig": {
-        "port": 3000,
-        "logger": "dev",
-        "enableUpload": true,
-        "enableCompression": true,
-        "webRoot": "/public",
-        "fileUploadFolder": "./uploads",
-        "enableSessions": true,
-        "sessionSecret": "vdW3F6y3506h",
-        "enableCORS": true,
-        "AccessControlAllowOrigin": "*",
-        "AccessControlAllowMethods": "GET,PUT,POST,DELETE,OPTIONS",
-        "AccessControlAllowHeaders": "Origin, X-Requested-With, Content-Type, Accept",
-        "AccessControlAllowCredentials": true,
-        "AccessControlMaxAge": 3600
-    },
+```js
+Ext.define('DemoExtJs.Application', {
+    name: 'DemoExtJs',
 
-    "MySQLConfig": {
-        "hostname": "localhost",
-        "port": 3306,
-        "user": "script",
-        "password": "JxJSNa3stRYSV68j",
-        "db": "demo"
-    },
-
-    "ExtDirectConfig": {
-        "namespace": "ExtRemote",
-        "apiName": "REMOTING_API",
-        "apiPath": "/directapi",
-        "classPath": "/direct",
-        "classPrefix": "DX",
-        "server": "localhost",
-        "port": "3000",
-        "protocol": "http",
-        "appendRequestResponseObjects": true
-    }
-}
-```
-Step 4: Create and modify your Sencah Touch / ExtJs application.
-
-#### *** Touch application modifications ***
-
-For you Sencha touch application you have to add the following lines inside Touch application main /public/app.js file, just before Ext.application code:
-```
-Ext.require([
-    'Ext.direct.*'
-]);
-
-Ext.onReady(function(){
-    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API); //Must match namespace and apiName defined in node.js server
-});
-
-//Ext.application({
-//.. your app code here
+    requires:[
+        'DemoExtJs.DirectAPI'
+    ],
 
 ```
 
-/public/index.html(add the line for requesting API): 
-```
-<!-- The line below must be kept intact for Sencha Command to build your application -->
-    <script id="microloader" type="text/javascript" src="touch/microloader/development.js"></script>
-    <script type="text/javascript" src="/directapi"></script>
-```
+-
+###Usage
+####Method signature and structure of method
 
-#### Method signature and structure of method
-
-```
+```js
     // method signature has 5 parameters
     /**
      *
@@ -295,50 +163,63 @@ Ext.onReady(function(){
 ```
 
 
-#### *** Sample direct methods ***
-Create file /direct/DXTodoItem.js :
-```
+####Sample direct methods for CRUD
+
+```js
 var table = 'todoitem';
-var mysql = mySQL;
+var db = global.App.database;
 
 var DXTodoItem  = {
     create: function(params, callback){
-        var conn = mysql.connect();
+        var conn = db.connect();
         delete params['id'];
         conn.query('INSERT INTO ' + table + ' SET ?', params, function(err, result) {
-            mysql.disconnect(conn); //release connection
-            if (err) throw err;
+
+            if (err) db.debugError(callback, err);
 
             conn.query('SELECT * FROM '  + table + ' WHERE id = ?', result.insertId, function(err, rows, fields) {
-                callback(rows);
+                db.disconnect(conn); //release connection
+                callback({
+                    success: true,
+                    data: rows[0]
+                });
             });
         });
     },
 
     //callback as last argument is mandatory
     read: function(params, callback){
-        var conn = mysql.connect();
+        var conn = db.connect();
 
-        var sql = 'SELECT * from ' + table;
+        var sql = 'SELECT * FROM ' + table,
+            where = '';
+
+        //filtering. this example assumes filtering on 1 field, as multiple field where clause requires additional info e.g. chain operator
+
+        if(params.filter){
+            where = " WHERE `"+ params.filter[0].property  + "` LIKE '%" + params.filter[0].value + "%'"; // set your business logic here to perform advanced where clause
+            sql += where;
+        }
+
         // this sample implementation supports 1 sorter, to have more than one, you have to loop and alter query
         if(params.sort){
             var s = params.sort[0];
-            sql = sql + ' order by ' + conn.escape(s.property) +  ' ' + conn.escape(s.direction);
+            sql = sql + ' ORDER BY ' + conn.escape(s.property) +  ' ' + conn.escape(s.direction);
         }
 
         // Paging
-        sql = sql + ' limit ' + conn.escape(params.start) + ' , ' + conn.escape(params.limit);
+        sql = sql + ' LIMIT ' + conn.escape(params.start) + ' , ' + conn.escape(params.limit);
 
         conn.query(sql, function(err, rows, fields) {
-            if (err) throw err;
+            if (err) db.debugError(callback, err);
 
             //get totals for paging
 
-            var totalQuery = 'SELECT count(*) as totals from ' + table;
+            var totalQuery = 'SELECT count(*) as totals from ' + table + where;
 
             conn.query(totalQuery, function(err, rowsTotal, fields) {
-                mysql.disconnect(conn); //release connection
-                if (err) throw err;
+                db.disconnect(conn); //release connection
+                if (err) db.debugError(callback, err);
 
                 callback({
                     success: true,
@@ -350,22 +231,26 @@ var DXTodoItem  = {
     },
 
     update: function(params, callback){
-        var conn = mysql.connect();
+        var conn = db.connect();
 
         conn.query('UPDATE ' + table + ' SET ? where id = ' + conn.escape(params['id']), params, function(err, result) {
-            mysql.disconnect(conn); //release connection
-            if (err) throw err;
+            db.disconnect(conn); //release connection
+            if (err) db.debugError(callback, err);
             callback({success:true});
         });
     },
 
     destroy: function(params, callback){
-        var conn = mysql.connect();
+        var conn = db.connect();
 
         conn.query('DELETE FROM ' + table + ' WHERE id = ?', conn.escape(params['id']), function(err, rows, fields) {
-            if (err) throw err;
-            mysql.disconnect(conn); //release connection
-            callback({success:true, id:params['id']});
+            if (err) db.debugError(callback, err);
+
+            db.disconnect(conn); //release connection
+            callback({
+                success:rows.affectedRows === 1, //if row successfully removed, affected row will be equal to 1
+                id:params['id']
+            });
         });
     }
 };
@@ -373,8 +258,9 @@ var DXTodoItem  = {
 module.exports = DXTodoItem;
 ```
 
-#### *** Configure your application model with direct proxy  ***
-```
+####How to configure your application model with direct proxy
+
+```js
 Ext.define('TouchDirect.model.TodoItem', {
     extend: 'Ext.data.Model',
     config: {
@@ -404,123 +290,108 @@ Ext.define('TouchDirect.model.TodoItem', {
         }
     }
 });
+
 ```
 
-####  *** ExtJS Application modifications ***
+If you are using component with read only functionality, then you can specify directFn instead.
+```js
+Ext.define('DemoTouch.model.TodoItem', {
+    extend: 'Ext.data.Model',
+    config: {
+        idProperty: 'id',
+        fields: [{
+            name: 'id',
+            type: 'int'
+        }, {
+            name: 'text',
+            type: 'string'
+        }, {
+            name: 'complete',
+            type: 'boolean'
+        }],
+        sorters: [
+            {
+                property : "id",
+                direction: "DESC"
+            }
+        ],
+        proxy: {
+            //Set proxy type
+            type: 'direct',
 
-For your ExtJs app add in /public/app.js :
-```
-Ext.require([
-    'Ext.direct.*'
-]);
+            //Define direct method. For read only purposes
+            directFn: 'ExtRemote.DXTodoItem.read',
 
-Ext.onReady(function(){
-    Ext.direct.Manager.addProvider(ExtRemote.REMOTING_API);
+            reader: {
+                type: 'json',
+                rootProperty: 'data',
+                messageProperty:'message'
+            }
+        }
+    }
 });
 ```
 
-#### Index file /public/index.html  add script containing directapi.
-```
-<!DOCTYPE HTML>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>DesktopDirect</title>
-    <!-- <x-compile> -->
-        <!-- <x-bootstrap> -->
-            <link rel="stylesheet" href="bootstrap.css">
-            <script src="ext/ext-dev.js"></script>
-            <script src="bootstrap.js"></script>
-        <!-- </x-bootstrap> -->
-        <script src="app.js"></script>
-    <!-- </x-compile> -->
-    <script src="/directapi"></script>
-</head>
-<body></body>
-</html>
-```
+####How to configure your form
 
-Then for your directCfg, and api definitions use string literals of methods,
-like this:
-
-#####Form:
-
-```
+```js
 api:{
       load: 'ExtRemote.DXFormTest.load',
       submit:'ExtRemote.DXFormTest.submit'
 }
-````
-
-#####Grid store with directFn:
-
 ```
-store: {
-            model: 'Company',
-            remoteSort: true,
-            autoLoad: true,
-            sorters: [{
-                property: 'name',
-                direction: 'ASC'
-            }],
-            proxy: {
-                type: 'direct',
-                directFn: 'TestAction.getGrid'
-            }
-        },
-```
-####Even more interesting is the file upload case:
 
-#### ExtJs config
-```
+####File upload inside the form
+
+```js
+{
+    xtype:'form',
+    title: 'File upload',
+    bodyPadding:5,
+    api:{
+        submit:'ExtRemote.DXFormTest.filesubmit'
+    },
+    paramOrder: ['uid'],
+    items:[
         {
-                        xtype:'form',
-                        title: 'File upload',
-                        bodyPadding:5,
-                        api:{
-                            submit:'ExtRemote.DXFormTest.filesubmit'
-                        },
-                        paramOrder: ['uid'],
-                        items:[
-                            {
-                                xtype:'textfield',
-                                fieldLabel:'Description',
-                                name:'description'
-                            },
-                            {
-                                xtype: 'filefield',
-                                name: 'photo',
-                                fieldLabel: 'Photo',
-                                labelWidth: 50,
-                                msgTarget: 'side',
-                                allowBlank: true,
-                                anchor: '40%',
-                                buttonText: 'Select Photo...'
-                            }
-                        ],
-                        tbar:[
-                            {
-                                text:'Upload..',
-                                handler:function(btn){
-                                    btn.up('form').getForm().submit(
-                                        {
-                                            waitMsg: 'Uploading your photo...',
-                                            success: function(fp, o) {
-                                                Ext.Msg.alert('Success', 'Your photo "' + o.result.name +
-                                                    '" has been uploaded.<br> File size:' + o.result.size + ' bytes.');
-                                            }
-                                        }
-                                    );
-                                }
-                            }
-                        ]
+            xtype:'textfield',
+            fieldLabel:'Description',
+            name:'description'
+        },
+        {
+            xtype: 'filefield',
+            name: 'photo',
+            fieldLabel: 'Photo',
+            labelWidth: 50,
+            msgTarget: 'side',
+            allowBlank: true,
+            anchor: '40%',
+            buttonText: 'Select Photo...'
+        }
+    ],
+    tbar:[
+        {
+            text:'Upload..',
+            handler:function(btn){
+                btn.up('form').getForm().submit(
+                    {
+                        waitMsg: 'Uploading your photo...',
+                        success: function(fp, o) {
+                            Ext.Msg.alert('Success', 'Your photo "' + o.result.name +
+                                '" has been uploaded.<br> File size:' + o.result.size + ' bytes.');
+                        }
                     }
+                );
+            }
+        }
+    ]
+}
 ```
 
 #### node.js sample for upload/submit/test/load
 
-#### File:DXFormTest
-```
+
+```js
 var DXFormTest = {
     testMe: function(params, callback){
         callback({
@@ -546,81 +417,95 @@ var DXFormTest = {
             success:true,
             params:params
         });
-
     },
 ```
 
 When dealing with forms that submit via submit api method or upload a file,
-remember to mark your method with formHandler, as shown below
-```
-        filesubmit: function(params, callback, sessionID, request, response/*formHandler*/){
-            var files = request.files; //get files from request object
-            // console.log(params, files)
+remember to mark your method with formHandler, as shown below:
 
-            // Do something with uploaded file, e.g. move to another location
-            var fs = require('fs'),
-                file = files.photo,
-                tmp_path = file.path;
+```js
+filesubmit: function(params, callback, sessionID, request, response/*formHandler*/){
+        var files = request.files; //get files from request object
+        // console.log(params, files)
 
-            // set where the file should actually exists - in this case it is in the "demo" directory
-            var target_path = './public/demo/' + file.name;
+        // Do something with uploaded file, e.g. move to another location
+        var fs = require('fs'),
+            file = files.photo,
+            tmp_path = file.path;
 
-            // move the file from the temporary location to the intended location
-            // do it only if there is a file with size
-            if(file.size > 0){
-                try{
-                    fs.rename(tmp_path, target_path, function(err) {
-                        if(err){
-                            callback({
-                                success: false,
-                                msg: 'Upload failed',
-                                errors: err.message
-                            });
-                        }
-                        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-                        fs.unlink(tmp_path, function() {
-                            callback({
-                                success: true,
-                                msg: 'Uploaded successfully',
-                                size: file.size,
-                                name: file.name
-                            });
+        // set where the file should actually exists - in this case it is in the "demo" directory
+        var target_path = './public/uploaded_images/' + file.name;
+
+        var successfulUpload = function(cb){
+
+        };
+
+        var failedUpload = function(cd, error){
+
+        };
+
+        // move the file from the temporary location to the intended location
+        // do it only if there is a file with size
+        if(file.size > 0){
+            try{
+                fs.rename(tmp_path, target_path, function(err) {
+                    if(err){
+                        callback({
+                            success: false,
+                            msg: "Upload failed - can't rename the file",
+                            errors: err.message
+                        });
+                    }
+                    // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
+                    fs.unlink(tmp_path, function() {
+                        callback({
+                            success: true,
+                            msg: 'Uploaded successfully',
+                            size: file.size,
+                            name: file.name
                         });
                     });
-                }catch(e) {
-                    callback({
-                        success: false,
-                        msg: 'Upload failed',
-                        errors: e.message
-                    });
-                }
-            }else{
-                callback({
-                    success: false,
-                    msg: 'No file',
-                    params: params
                 });
+            }catch(e) {
+//                callback({
+//                    success: false,
+//                    msg: "Upload failed - can't rename the file",
+//                    errors: e.message
+//                });
             }
+        }else{
+            callback({
+                success: false,
+                msg: "Upload failed - empty file",
+                params: params,
+                errors: {
+                    clientCode: "File not found",
+                    portOfLoading: "This field must not be null"
+                }
+            });
         }
+    }
 
 ```
 
-NOTE: Remember, that you can always invoke server-side methods if you need them, and receive the response inside the callback.
+####Direct method invoking
+
+If you are not relying on widgets, you can always invoke server-side methods if you need them, and receive the response inside the callback.
 This way you are not limited to existing prebuilt use cases in different widgets.
 Sample call would be simple as this:
 
-```
+```js
 ExtRemote.DXFormTest.testMe(3,
     function(res){
         console.dir(res);
     }
 );
-
 ```
 
 #### Basic serverside methods and their callbacks
-```
-   //regular functions MUST call callback.
+
+```js
+    //Important! All methods at the end of processing instead of returning value must call callback function.
     regularFunction: function(params, callback){
         callback({msg: params});
     },
@@ -637,16 +522,31 @@ ExtRemote.DXFormTest.testMe(3,
 
         //if there will be other methods in batch, processing will continue for next transaction
     }
+
+    //Every method always receive 5 parameters!
+
+    var DXCollection  = {
+        /**
+         *
+         * @param params object with received parameters
+         * @param callback callback function to call at the end of current method
+         * @param sessionID - current session ID if "enableSessions" set to true, otherwise null
+         * @param request only if "appendRequestResponseObjects" enabled
+         * @param response only if "appendRequestResponseObjects" enabled
+         */
+        publish: function(params, callback, sessionID, request, response){
+        //..
+
 ```
 
-### Session support
+####Session support
 
 As of version 1.1.0 sessions are supported within reference implementation. Set enableSessions to true.
 When session support is enabled, on all methods 3rd parameter will be set to sessionID otherwise it's value will be null.
 You have to implement authentication and session handling process according to your business requirements.
 Example code:
 
-```
+```js
 var DXLogin  = {
     // method signature has 5 parameters
     /**
@@ -694,9 +594,9 @@ var DXLogin  = {
 module.exports = DXLogin;
 ```
 
-For more use cases please refer to ExtJs documentation.
+For more use cases please refer to Sencha documentation.
 
-### Server 'production' vs 'development' mode
+####Server 'production' vs 'development' mode
 
 By default Your node.js server is working in development mode, thus effectively spitting out a lot of useful dev-time info.
 As of version 1.0.0 connector will look at the mode and change its behavior upon selection. 
@@ -707,16 +607,18 @@ To change mode you have to set environment variable NODE_ENV to production.
 There are 2 options.
 1) in Terminal run the command: export NODE_ENV=production
 2) Add permamently to your .bash_profile file:
-```
+
+```sh
 echo export NODE_ENV=production >> ~/.bash_profile
 source ~/.bash_profile
 ```
-### Explicit 'exception' transactions
+
+####Explicit 'exception' transactions
 
 Sometimes you want to ensure that server won't crash during some actions, and/or send data back to client during process.
 To do that you have to call the callback with additional parameters, like in this example:
 
-```
+```js
 
 conn.query(totalQuery, function(err, rowsTotal, fields) {
     mysql.disconnect(conn); //release connection
@@ -738,16 +640,48 @@ conn.query(totalQuery, function(err, rowsTotal, fields) {
             total: rowsTotal[0].totals
         });
     }
+
+    //Best practice would be to call predefined method that handles exceptions
+    //For example:
+    debugError: function(fn, error){
+            // Generate SOFT error, instead of throwing hard error.
+            // We send messages with debug ingo only if in development mode
+
+            if(global.App.mode === 'development'){
+                fn({message: {
+                    text: 'Database error',
+                    debug: error
+                }
+                });
+            }else{
+                fn({message: {
+                    text: 'Unknown error',
+                    debug: null
+                }
+                });
+            }
+        }
+
+        //and call it whenever it required:
+        update: function(params, callback){
+                var conn = db.connect();
+
+                conn.query('UPDATE ' + table + ' SET ? where id = ' + conn.escape(params['id']), params, function(err, result) {
+                    db.disconnect(conn); //release connection
+                    if (err) db.debugError(callback, err);
+                    callback({success:true});
+                });
+            },
+
 });
 
 ```
 
-
-### Direct access to request and response objects
+#### Direct access to request and response objects
 Version 1.3.0 adds this functionality if you configure router with parameter "appendRequestResponseObjects" and set it to true
 Method signatures:
 
-```
+```js
 
 requestObjectsEnabled: function(params, callback, sessionID, request, response){
 
@@ -762,11 +696,6 @@ requestObjectsDisabled: function(params, callback, sessionID){
 }
 
 ```
-
-#### Example code
-Sample applications for Touch and ExtJs can be found here: https://github.com/jurisv/extdirect.examples
-
-It's work in progress, and hopefully it has enough code to get you started.
 
 
 ### Changelog:
