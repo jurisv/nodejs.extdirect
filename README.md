@@ -702,7 +702,7 @@ requestObjectsDisabled: function(params, callback, sessionID){
 * 1.3.1 (9 nov 2013)
 
         Fix parameter mismatch in api.js.
-        <b>Important!</b>
+        Important!
         If you have floating amount of parameters instead of 1 object 'parameters' this might be a breaking change! Stay with version 1.2.0 or make appropriate changes.
         Changed file upload example. As we have request object as parameter, you can retrieve uploaded file/s directly from that object
 
