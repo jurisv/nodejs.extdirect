@@ -699,6 +699,10 @@ requestObjectsDisabled: function(params, callback, sessionID){
 
 
 ### Changelog:
+* 1.3.2 (11 jan 2014)
+
+        Add support for relative Url. To keep backward compatibility it's set to false
+
 * 1.3.1 (9 nov 2013)
 
         Fix parameter mismatch in api.js.
