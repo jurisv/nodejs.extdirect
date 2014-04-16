@@ -697,6 +697,27 @@ requestObjectsDisabled: function(params, callback, sessionID){
 
 ```
 
+#### Looging
+
+Sample usage
+```
+var logger = function(action, method, params) {
+    params = util.inspect(params, showHidden=false, depth=10, colorize=true);
+    console.log('Direct Call: %s.%s(%s)', action, method, params);
+}
+
+var directCfg = {
+    namespace: "ExtRemote",
+    apiName: "REMOTING_API",
+    apiPath: "/directapi",
+    classPath: "/direct",
+    classPrefix: "DX",
+    relativeUrl: true,
+    logging: logger // or just specify console.log
+};
+```
+
+
 
 ### Changelog:
 * 1.3.3 (16 apr 2014)
