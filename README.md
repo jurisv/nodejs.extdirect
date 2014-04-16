@@ -699,6 +699,9 @@ requestObjectsDisabled: function(params, callback, sessionID){
 
 
 ### Changelog:
+* 1.3.3 (16 apr 2014)
+        Add support for looging from router.
+
 * 1.3.2 (11 jan 2014)
 
         Add support for relative Url. To keep backward compatibility it's set to false
