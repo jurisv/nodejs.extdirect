@@ -720,6 +720,11 @@ var directCfg = {
 
 
 ### Changelog:
+* 1.3.4 (5 aug 2014)
+
+         Fix typo
+         Fix routing when application is started by Passenger and not by node
+
 * 1.3.3 (16 apr 2014)
 
         Add support for logging from router.
