@@ -697,7 +697,7 @@ requestObjectsDisabled: function(params, callback, sessionID){
 
 ```
 
-#### Looging
+#### Logging
 
 Sample usage
 ```
@@ -722,7 +722,7 @@ var directCfg = {
 ### Changelog:
 * 1.3.3 (16 apr 2014)
 
-        Add support for looging from router.
+        Add support for logging from router.
 
 * 1.3.2 (11 jan 2014)
 
