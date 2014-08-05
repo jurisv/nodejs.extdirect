@@ -1,6 +1,6 @@
 {
   "name": "extdirect",
-  "version": "1.3.2",
+  "version": "1.3.4",
   "description": "Ext.Direct connector for Sencha Touch/ExtJs",
   "main": "index.js",
   "scripts": {
