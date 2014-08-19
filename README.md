@@ -720,6 +720,9 @@ var directCfg = {
 
 
 ### Changelog:
+* 1.3.5 (19 aug 2014)
+        Fix routing path so it will work for Windows
+
 * 1.3.4 (5 aug 2014)
 
          Fix typo
