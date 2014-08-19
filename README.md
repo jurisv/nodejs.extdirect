@@ -3,6 +3,7 @@
 #### Compatibility:
 * Sencha Touch 2.3+
 * ExtJs 4.2.x+
+* ExtJs 5+
 
 #### Example code
 Sample applications for Touch and ExtJs can be found here: https://github.com/jurisv/extdirect.examples
