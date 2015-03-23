@@ -721,6 +721,9 @@ var directCfg = {
 
 
 ### Changelog:
+* 2.0.0 (TBD)
+    Closes: Comment source code and use descriptive variable names #21
+
 * 1.3.6 (21 aug 2014)
          Fix typo
 
