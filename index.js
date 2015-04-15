@@ -1,6 +1,11 @@
-var api    = require('./lib/api'),
+var api = require('./lib/api'),
     router = require('./lib/router'),
     extdirect = module.exports;
 
-extdirect.getAPI = api.getAPI;
-extdirect.processRoute = router.processRoute;
+extdirect.initApi = function(config){
+    return new api(config);
+};
+
+extdirect.initRouter = function(config){
+    return new router(config);
+};
