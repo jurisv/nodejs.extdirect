@@ -36,5 +36,18 @@ TODO
 
 ### Changelog:
 * 2.0.0 (TBD)
-    Closes: Comment source code and use descriptive variable names #21
+
+    * Comment source code and use descriptive variable names #21
+    * Implement namespaced Classes to have nested actions #29 See below
+    * Add namespace support (nested Actions) You can now organize files using folders
+    * More streamlined definition for metadata and formHandler  (//@meta and //@formHandler )
+    * Exclude non .js files from API discovery
+    * Separate route paths for classes (classRouteUrl and classPath)
+    * Use latest Express framework in examples, closes #28
+
+### Todo
+
+    * Improve callback support #30
+    * Add support for metadata #27 (have to provide example)
+
 
