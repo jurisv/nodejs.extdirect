@@ -54,6 +54,13 @@ TODO
 ### Todo
 
     * Add support for metadata #27 (have to provide example)
-    * databaseAutoConnection property for router
+    * databaseAutoConnection property for router (this should be handled in before/after hooks)
+    * add .scripts folder (examples)
+    * Add convinience methods and reasonable way to call:
+        * beforeAction
+        * afterAction
+        * beforeTransaction
+        * afterTransaction
+    * //@role tag support. If API discovery finds this tag, it will call Roles.js script in .scripts folder.
 
 
