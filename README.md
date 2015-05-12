@@ -44,10 +44,15 @@ TODO
     * Exclude non .js files from API discovery
     * Separate route paths for classes (classRouteUrl and classPath)
     * Use latest Express framework in examples, closes #28
+    * New property 'cacheAPI' allows to bypass node module caching, which gives the option to work on class files without reloading the server
+    * Callback format changed to be in line with node.js standards callback(err, result); closes #30
+    * New property 'responseHelper'. It will add success: true/false to result payload if:
+        * We set success to true if responseHelper is TRUE and callback is called without any arguments or with true as result or result object is present, but success is missing
+        * We set success to false if autoResponse is TRUE and callback is called with result set to false
+
 
 ### Todo
 
-    * Improve callback support #30
     * Add support for metadata #27 (have to provide example)
 
 
