@@ -54,5 +54,6 @@ TODO
 ### Todo
 
     * Add support for metadata #27 (have to provide example)
+    * databaseAutoConnection property for router
 
 
