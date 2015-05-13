@@ -49,13 +49,14 @@ TODO
     * New property 'responseHelper'. It will add success: true/false to result payload if:
         * We set success to true if responseHelper is TRUE and callback is called without any arguments or with true as result or result object is present, but success is missing
         * We set success to false if autoResponse is TRUE and callback is called with result set to false
-
+    * Place Processor files or any othere relevant scriots in .scripts folder. It will be ignored during API discovery
+    * API Processor. Two methods beforeApi and afterApi to hook in to API discovery flow. See Examples for ExtJS TODO, implement afterAPI hook and example
 
 ### Todo
 
     * Add support for metadata #27 (have to provide example)
     * databaseAutoConnection property for router (this should be handled in before/after hooks)
-    * add .scripts folder (examples)
+
     * Add convinience methods and reasonable way to call:
         * beforeAction
         * afterAction
