@@ -50,7 +50,7 @@ TODO
         * We set success to true if responseHelper is TRUE and callback is called without any arguments or with true as result or result object is present, but success is missing
         * We set success to false if autoResponse is TRUE and callback is called with result set to false
     * Place Processor files or any othere relevant scriots in .scripts folder. It will be ignored during API discovery
-    * API Processor. Two methods beforeApi and afterApi to hook in to API discovery flow. See Examples for ExtJS TODO, implement afterAPI hook and example
+    * API Processor. Two methods beforeApi and afterApi to hook in to API discovery flow. See Examples for ExtJS
 
 ### Todo
 
@@ -62,6 +62,5 @@ TODO
         * afterAction
         * beforeTransaction
         * afterTransaction
-    * //@role tag support. If API discovery finds this tag, it will call Roles.js script in .scripts folder.
 
 
