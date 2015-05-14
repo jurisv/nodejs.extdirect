@@ -52,11 +52,4 @@ TODO
     * Place Processor files or any othere relevant scriots in .scripts folder. It will be ignored during API discovery
     * API Processor. Two methods beforeApi and afterApi to hook in to API discovery flow. See Examples for ExtJS
     * Router Processor. Two methods beforeTransaction and afterTransaction. See Examples for ExtJS. Use them to open and close db connection.
-
-### Todo
-
-    * Add support for metadata #27 (have to provide example)
-
-
-
-
+    * Add support for metadata #27
