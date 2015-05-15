@@ -30,12 +30,34 @@ Sencha Touch:
 
 #### Usage
 
-TODO
+For usage please refer to Examples.
+
+Configuration description:
+
+```
+{
+    "rootNamespace": "Server", //Namespace in which server will be accessible from client side
+    "apiName": "API", // API name
+    "apiUrl": "/directapi", // URL to retrieve API configuration
+    "classRouteUrl": "/direct", // URL to call Direct methods
+    "classPath": "/direct", // Direct class location in filesystem relative to the server directory
+    "server": "localhost", // Hosting server name
+    "port": "3000", // Hosting server port
+    "protocol": "http", // http | https
+    "timeout": 30000, // Operation timeout
+    "cacheAPI": false, // Set true to cache API's for production. During development setting to false will allow to make any changes and access API's without server reload.
+    "relativeUrl": false, // Use relative URL's
+    "appendRequestResponseObjects": true, // If true, will append req and res objects to method call
+    "enableMetadata": true, // Metadata support
+    "responseHelper": true, // Automatically append success true|false
+    "enableProcessors": true //Enable Helpers to have methods before and after API discovery as well as before and after Transaction batch
+}
+```
 
 
 
 ### Changelog:
-* 2.0.0 (TBD)
+* 2.0.0 (14 may 2015)
 
     * Comment source code and use descriptive variable names #21
     * Implement namespaced Classes to have nested actions #29 See below
