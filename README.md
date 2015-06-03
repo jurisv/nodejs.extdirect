@@ -57,6 +57,10 @@ Configuration description:
 
 
 ### Changelog:
+* 2.0.1 (3 jun 2015)
+
+    * Allow callback to return boolean "false" value. (@cpmoser)
+    
 * 2.0.0 (14 may 2015)
 
     * Comment source code and use descriptive variable names #21
