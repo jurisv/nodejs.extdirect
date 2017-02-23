@@ -57,6 +57,9 @@ Configuration description:
 
 
 ### Changelog:
+* 2.0.2 (23 feb 2017)
+     * Fix deeply nested api discovery
+   
 * 2.0.1 (3 jun 2015)
 
     * Allow callback to return boolean "false" value. (@cpmoser)
