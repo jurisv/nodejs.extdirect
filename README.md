@@ -57,6 +57,9 @@ Configuration description:
 
 
 ### Changelog:
+* 2.0.3 (14 may 2017)
+     * Wrong url is computed at request `/directapi` Fix #36
+     
 * 2.0.2 (23 feb 2017)
      * Fix deeply nested api discovery
    
