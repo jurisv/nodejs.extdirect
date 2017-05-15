@@ -36,7 +36,8 @@ Configuration description:
 
 ```
 {
-    "rootNamespace": "Server", //Namespace in which server will be accessible from client side
+    "ES6": false, // Support method discovery without `function` keyword.  
+    "rootNamespace": "Server", // Namespace in which server will be accessible from client side
     "apiName": "API", // API name
     "apiUrl": "/directapi", // URL to retrieve API configuration
     "classRouteUrl": "/direct", // URL to call Direct methods
@@ -57,6 +58,9 @@ Configuration description:
 
 
 ### Changelog:
+* 2.0.4 (14 may 2017)
+     * Support method discovery without function keyword. Implement #35
+     
 * 2.0.3 (14 may 2017)
      * Wrong url is computed at request `/directapi` Fix #36
      
