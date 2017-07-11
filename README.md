@@ -6,13 +6,14 @@ Important: Version 2.0.0 and up is not compatible with previous 1.x branch
 * Sencha Touch 2.3+
 * Ext JS 4.2.x+
 * Ext JS 5+
-* Ext JS 6.5
+* Ext JS 6.5+
 
 #### Example code
 Sample applications for Touch and Ext JS can be found here: https://github.com/jurisv/extdirect.examples
-Official Sencha example can be found here https://github.com/sencha-extjs-examples/Coworkee
 
-ExtJS:
+Official Sencha example (using Ext JS 6.5) can be found here: https://github.com/sencha-extjs-examples/Coworkee
+
+Ext JS:
 
     * Application structure with API provider
     * Grid CRUD Master-detail
@@ -60,6 +61,8 @@ Configuration description:
 
 
 ### Changelog:
+* 2.0.5 (10 jul 2017)
+     * Add link to Sencha official example. No changes in API.
 * 2.0.4 (14 may 2017)
      * Support method discovery without function keyword. Implement #35
      
