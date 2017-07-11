@@ -4,11 +4,13 @@ Important: Version 2.0.0 and up is not compatible with previous 1.x branch
 
 #### Compatibility:
 * Sencha Touch 2.3+
-* ExtJs 4.2.x+
-* ExtJs 5+
+* Ext JS 4.2.x+
+* Ext JS 5+
+* Ext JS 6.5
 
 #### Example code
-Sample applications for Touch and ExtJs can be found here: https://github.com/jurisv/extdirect.examples
+Sample applications for Touch and Ext JS can be found here: https://github.com/jurisv/extdirect.examples
+Official Sencha example can be found here https://github.com/sencha-extjs-examples/Coworkee
 
 ExtJS:
 
@@ -19,7 +21,7 @@ ExtJS:
     * Form Load / Submit
     * Form file upload (Cross domain upload is not supported!)
     * Tree root / child dynamic load
-    * Metadata (Starting from ExtJS 5)
+    * Metadata (Starting from Ext JS 5)
     * Namespaces (From 4.2)
 
 Sencha Touch:
